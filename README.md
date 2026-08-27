@@ -3,6 +3,7 @@
 [![CI](https://github.com/christianwirick/RoleRadar/actions/workflows/ci.yml/badge.svg)](https://github.com/christianwirick/RoleRadar/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Ruff](https://img.shields.io/badge/lint-Ruff-261230)
+![Version](https://img.shields.io/badge/version-0.0.1-7D46D8)
 
 Role Radar is a small Python CLI that watches a job board and alerts you when new roles match your configured titles.
 
@@ -98,6 +99,9 @@ Tests run offline and do not require a live job board or real email account.
     ├── tests/
     ├── data/
     ├── logs/
+    ├── CHANGELOG.md
+    ├── LICENSE
+    ├── Makefile
     ├── .env.example
     ├── .gitignore
     ├── pyproject.toml

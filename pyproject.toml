@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "role-radar"
-version = "1.0.0"
+version = "0.0.1"
 description = "A small Python CLI that watches a job board and alerts you when matching roles appear."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -12,11 +12,32 @@ license = "BSD-3-Clause"
 authors = [
     { name = "Christian Wirick" }
 ]
+keywords = [
+    "jobs",
+    "job-search",
+    "automation",
+    "selenium",
+    "cli",
+]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Environment :: Console",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
 dependencies = [
     "selenium>=4.20",
     "beautifulsoup4>=4.12",
     "python-dotenv>=1.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/christianwirick/RoleRadar"
+Repository = "https://github.com/christianwirick/RoleRadar"
+Issues = "https://github.com/christianwirick/RoleRadar/issues"
 
 [project.optional-dependencies]
 dev = [

@@ -7,13 +7,11 @@ import logging
 import time
 from pathlib import Path
 
-from . import match, out, pack, scraper
+from . import __version__, match, out, pack, scraper
 from .config import ConfigError, format_config, require_config, resolve_config
 from .mail import EmailError, format_email_body, format_email_html, send_email
 from .models import AppConfig, JobListing
 from .state import StateError, format_seen_list, load_seen, save_seen
-
-__version__ = "1.0.0"
 
 # All paths are resolved relative to this file so the CLI behaves the same
 # from any working directory (e.g. when launched from cron).
