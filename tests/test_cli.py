@@ -118,7 +118,7 @@ def test_re_resends_seen_roles_without_clearing_first(monkeypatch, tmp_path, cap
     assert rr.main(["re"]) == 0
 
     output = capsys.readouterr().out
-    assert "Retesting all current matches" in output
+    assert "Retesting 2 current role(s)." in output
     assert len(sent) == 1
     remembered = state.load_seen(state_path)
     assert "https://jobs.example.com/1" in remembered
