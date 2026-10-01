@@ -119,11 +119,11 @@ def format_job_table(jobs: list[JobListing]) -> str:
     return "\n".join(lines)
 
 
-def format_check_report(scraped: int,
+def format_test_report(scraped: int,
                         matched: int,
                         new_jobs: list[JobListing]) -> str:
     lines = [
-        "Role Radar — check (dry run)",
+        "Role Radar — test",
         f"Scraped {scraped} listing(s) · {matched} matched filter(s) · "
         f"{len(new_jobs)} new",
         "",
