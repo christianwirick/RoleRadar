@@ -1,17 +1,37 @@
 <p align="center">
-  <img src="assets/role-radar.svg" alt="RoleRadar — less refreshing, more applying." width="820">
+  <img src="assets/role-radar.svg" alt="RoleRadar" width="820">
 </p>
 
-<p align="center">
+# Stop refreshing job boards. Let the radar watch for you.
+
+RoleRadar scans job boards, finds roles that match what you want, filters out jobs you've already seen, and alerts you when something new lands.
+
+<p>
   <a href="https://github.com/christianwirick/RoleRadar/actions/workflows/ci.yml"><img src="https://github.com/christianwirick/RoleRadar/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/version-0.1.0-7D46D8" alt="Version 0.1.0">
   <img src="https://img.shields.io/badge/Python-3.10%2B-blue" alt="Python 3.10+">
   <img src="https://img.shields.io/badge/license-BSD--3--Clause-green" alt="BSD 3-Clause">
 </p>
 
-RoleRadar watches a JavaScript-rendered job board, filters the noise, remembers what it already showed you, and emails the good stuff.
+<p align="center">
+  <img src="docs/terminal-demo.gif" alt="RoleRadar terminal demo" width="700">
+</p>
 
-No tab hoarding. No manual refresh loop. Just a small CLI doing the lurking for you.
+## What it does
+
+```text
+job board
+   ↓
+scan everything
+   ↓
+keep the titles you care about
+   ↓
+skip jobs already seen
+   ↓
+email the new ones
+```
+
+RoleRadar is intentionally small. One CLI, one config file, one state file.
 
 ## Quick start
 
@@ -22,7 +42,7 @@ make setup
 source .venv/bin/activate
 ```
 
-Create your private config outside the repo:
+Create your private config:
 
 ```bash
 mkdir -p ~/.config/RoleRadar
@@ -42,40 +62,29 @@ rr run
 
 | Command | What it does |
 | --- | --- |
-| `rr check` | Validate config and launch real headless Chrome/ChromeDriver |
-| `rr test` | Scan the board without email or state changes |
+| `rr check` | Verify config and launch real headless Chrome/ChromeDriver |
+| `rr test` | Scan without sending email or changing state |
 | `rr run` | Email only matches RoleRadar has not seen before |
-| `rr re` | Resend every current match without deleting saved state first |
+| `rr re` | Resend every current match without clearing saved state |
 | `rr jobs` | Show remembered jobs |
 | `rr conf` | Show resolved config with the password hidden |
 | `rr reset` | Forget remembered jobs |
 
-## The loop
+## A little personality while it works
 
-```mermaid
-flowchart LR
-    A[Job board] --> B[📡 Scan]
-    B --> C[✨ Match]
-    C --> D{Seen before?}
-    D -- Yes --> E[Skip]
-    D -- No --> F[📬 Email]
-    F --> G[Remember]
-```
-
-While it works, RoleRadar rotates through status lines such as:
+RoleRadar rotates through status lines instead of repeating the same progress copy:
 
 ```text
 • Sweeping the radar...
+• Checking what the internet cooked up...
 • Filtering out the meh...
 • Looking for the new-new...
 • Preparing the reveal...
 ```
 
-The fun stays in the progress messages. Counts, failures, and results stay explicit.
+Counts, failures, and final results stay explicit.
 
-## Where your stuff lives
-
-Runtime files never need to live in the Git checkout.
+## Your files stay out of the repo
 
 | File | Location |
 | --- | --- |
@@ -83,17 +92,13 @@ Runtime files never need to live in the Git checkout.
 | Remembered jobs | `~/.config/RoleRadar/seen_jobs.json` |
 | Logs | `~/.config/RoleRadar/role_radar.log` |
 
-The checked-in `.env.example` is only a template. `rr conf` never prints the email password.
+The repository only carries `.env.example`. Your real credentials and runtime data stay under `~/.config/RoleRadar`.
 
-## Chrome + ChromeDriver
+## Smarter scraping
 
-`rr check` opens a real headless Chrome session. A successful check confirms that Selenium can launch Chrome with a working ChromeDriver.
+JavaScript job boards often render in waves. RoleRadar waits until the listing count stops changing before it reads the page, instead of grabbing the DOM as soon as the first role appears.
 
-If you pin a driver with `SE_CHROMEDRIVER`, RoleRadar also verifies that the path exists and is executable before launch.
-
-## How scanning finishes
-
-RoleRadar does not grab the page as soon as the first job appears. It waits for the rendered listing count to stop changing, then reads the final DOM. That matters on job boards that load hundreds of roles with JavaScript.
+`rr check` also opens a real headless Chrome session, so a green check means Chrome + ChromeDriver can actually launch.
 
 ## Development
 
@@ -101,8 +106,17 @@ RoleRadar does not grab the page as soon as the first job appears. It waits for 
 make check
 ```
 
-CI runs linting, tests across supported Python versions, a Chrome/ChromeDriver smoke test, and a small secret-leak sanity check.
+CI covers:
 
-## License
+- Python 3.10, 3.12, and 3.14
+- Ruff
+- pytest
+- real Chrome/ChromeDriver smoke test
+- tracked-secret and local-path sanity checks
 
-BSD 3-Clause. See [LICENSE](LICENSE).
+## More
+
+- [Roadmap](docs/TODO.md)
+- [Changelog](docs/CHANGELOG.md)
+- [Security policy](.github/SECURITY.md)
+- [License](LICENSE)
