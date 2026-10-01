@@ -75,9 +75,9 @@ def test_format_job_table_shows_property():
     assert "M Resort" in table
 
 
-def test_format_check_report_shows_counts_and_roles():
+def test_format_test_report_shows_counts_and_roles():
     new = [JobListing("Data Analyst", "https://x/1", "M Resort")]
-    report = match.format_check_report(scraped=10, matched=2, new_jobs=new)
+    report = match.format_test_report(scraped=10, matched=2, new_jobs=new)
     assert "Scraped 10" in report
     assert "matched filter(s)" in report
     assert "1 new" in report
@@ -86,6 +86,6 @@ def test_format_check_report_shows_counts_and_roles():
     assert "No email sent" in report
 
 
-def test_format_check_report_handles_nothing_new():
-    report = match.format_check_report(scraped=10, matched=2, new_jobs=[])
+def test_format_test_report_handles_nothing_new():
+    report = match.format_test_report(scraped=10, matched=2, new_jobs=[])
     assert "Nothing new" in report
