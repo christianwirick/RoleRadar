@@ -71,10 +71,11 @@ def check_browser() -> BrowserStatus:
             browser_version = str(caps.get("browserVersion", "unknown"))
             chrome_caps = caps.get("chrome", {})
             driver_version = str(chrome_caps.get("chromedriverVersion", "")).split(" ")[0]
+            resolved_driver_path = driver_path or str(getattr(driver.service, "path", "") or "")
             return BrowserStatus(
                 browser_version=browser_version,
                 driver_version=driver_version,
-                driver_path=driver_path,
+                driver_path=resolved_driver_path,
             )
     except WebDriverException as err:
         raise ScrapeError(
