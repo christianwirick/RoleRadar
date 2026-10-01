@@ -22,10 +22,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
@@ -63,17 +63,21 @@ jobs:
             exit 1
           fi
 
-          if git grep -nE 'gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,}|-----BEGIN (RSA|OPENSSH|EC) PRIVATE KEY-----'; then
+          if git grep -nE 'gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,}|-----BEGIN (RSA|OPENSSH|EC) PRIVATE KEY-----' -- ':!.github/workflows/ci.yml'; then
             echo "Possible secret found in tracked files."
             exit 1
           fi
 
-          if git grep -nE '/Users/[^/[:space:]]+'; then
+          if git grep -nE '/Users/[^/[:space:]]+' -- ':!.github/workflows/ci.yml'; then
             echo "Local macOS user path found in tracked files."
             exit 1
           fi
 
-          if git grep -nE '^EMAIL_PASSWORD=.+$' -- ':!.env.example'; then
+          if git grep -nE '^EMAIL_PASSWORD=.+
+            echo "Email password assignment found outside .env.example."
+            exit 1
+          fi
+ -- ':!.env.example' ':!.github/workflows/ci.yml'; then
             echo "Email password assignment found outside .env.example."
             exit 1
           fi
