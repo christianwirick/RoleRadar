@@ -89,9 +89,10 @@ def test_run_sends_then_dedupes(monkeypatch, tmp_path):
     assert sent == []
 
 
-def test_re_runs_the_alert_process(monkeypatch, tmp_path):
+def test_re_resets_state_then_runs_again(monkeypatch, tmp_path, capsys):
     _set_board(monkeypatch)
     _set_email(monkeypatch)
+    state.save_seen({"https://jobs.example.com/1"}, tmp_path / "seen.json")
     sent = []
     monkeypatch.setattr(
         rr,
@@ -100,6 +101,7 @@ def test_re_runs_the_alert_process(monkeypatch, tmp_path):
     )
 
     assert rr.main(["re"]) == 0
+    assert "Forgot 1 remembered role(s)" in capsys.readouterr().out
     assert len(sent) == 1
     assert "https://jobs.example.com/1" in state.load_seen(tmp_path / "seen.json")
 
@@ -185,11 +187,6 @@ def test_check_passes_with_ready_config(monkeypatch, tmp_path, capsys):
     assert "Ready to run." in output
 
 
-def test_clear_emits_terminal_clear_sequence(capsys):
-    assert rr.main(["clear"]) == 0
-    assert capsys.readouterr().out == "\033[2J\033[H"
-
-
 @pytest.mark.parametrize(
     "argv",
     [
@@ -201,6 +198,7 @@ def test_clear_emits_terminal_clear_sequence(capsys):
         ["preview-email"],
         ["export-clean"],
         ["version"],
+        ["clear"],
     ],
 )
 def test_removed_commands_are_usage_errors(argv):
