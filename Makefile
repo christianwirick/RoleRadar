@@ -1,5 +1,4 @@
 PYTHON := .venv/bin/python
-PIP := .venv/bin/pip
 PYTEST := .venv/bin/pytest
 RUFF := .venv/bin/ruff
 APP := .venv/bin/rr
