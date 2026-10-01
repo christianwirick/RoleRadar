@@ -71,7 +71,6 @@ def cmd_run(*, dry_run: bool = False, resend_all: bool = False) -> int:
         out.ok(f"Done in {time.monotonic() - started:.1f}s.")
         return 0
 
-    out.status("finish")
     with out.Pulse("finish", "Email sent"):
         send_email(
             cfg,
