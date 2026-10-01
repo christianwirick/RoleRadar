@@ -27,31 +27,27 @@ def cmd_run(*, dry_run: bool = False, resend_all: bool = False) -> int:
     mode = "test" if dry_run else "re" if resend_all else "run"
 
     out.header(f"Role Radar — {mode}")
-    out.info("Loading settings...")
     cfg = resolve_config(ENV_PATH)
     require_config(cfg, ENV_PATH, require_email=not dry_run)
-    out.ok("Settings locked.")
 
     log.info("Role Radar starting: %s.", mode)
     out.info(f"Watching: {', '.join(cfg.keywords)}")
     out.info(f"Board: {cfg.url}")
 
-    with out.Pulse("Opening the board...", "Board loaded"):
+    with out.Pulse("scan", "Radar sweep complete"):
         all_jobs, matched = scraper.scan_board(cfg)
 
-    out.info("Reading roles...")
     out.ok(f"Scraped {len(all_jobs)} listing(s).")
 
-    out.info("Matching titles...")
+    out.status("match")
     out.ok(f"Matched {len(matched)} listing(s).")
 
     seen = load_seen(SEEN_PATH)
+    out.status("new")
     if resend_all:
-        out.info("Retesting all current matches...")
         fresh = matched
-        out.ok(f"Selected {len(fresh)} role(s) for resend.")
+        out.ok(f"Retesting {len(fresh)} current role(s).")
     else:
-        out.info("Checking what’s new...")
         fresh = match.select_new(matched, seen)
         out.ok(f"Found {len(fresh)} new role(s).")
 
@@ -75,7 +71,8 @@ def cmd_run(*, dry_run: bool = False, resend_all: bool = False) -> int:
         out.ok(f"Done in {time.monotonic() - started:.1f}s.")
         return 0
 
-    with out.Pulse(f"Sending alert to {cfg.email_to}...", "Email sent"):
+    out.status("finish")
+    with out.Pulse("finish", "Email sent"):
         send_email(
             cfg,
             f"Role Radar: {len(fresh)} role(s) found",
@@ -85,7 +82,6 @@ def cmd_run(*, dry_run: bool = False, resend_all: bool = False) -> int:
 
     log.info("Email sent to %s with %d role(s).", cfg.email_to, len(fresh))
 
-    out.info("Remembering sent roles...")
     seen.update(job.key for job in fresh)
     save_seen(seen, SEEN_PATH)
     log.info("State updated; remembering %d role(s).", len(seen))
