@@ -4,6 +4,7 @@ import pytest
 
 from role_radar import cli as rr
 from role_radar import mail, out, scraper, state
+from role_radar.scraper import BrowserStatus
 
 SAMPLE_HTML = """
 <html><body>
@@ -29,9 +30,11 @@ CONFIG_VARS = [
 @pytest.fixture(autouse=True)
 def isolate(monkeypatch, tmp_path):
     """Keep every test off real files, logs, and environment config."""
-    monkeypatch.setattr(rr, "ENV_PATH", tmp_path / ".env")
-    monkeypatch.setattr(rr, "SEEN_PATH", tmp_path / "seen.json")
-    monkeypatch.setattr(rr, "LOG_PATH", tmp_path / "logs" / "role_radar.log")
+    app_dir = tmp_path / "RoleRadar"
+    monkeypatch.setattr(rr, "APP_DIR", app_dir)
+    monkeypatch.setattr(rr, "ENV_PATH", app_dir / ".env")
+    monkeypatch.setattr(rr, "SEEN_PATH", app_dir / "seen_jobs.json")
+    monkeypatch.setattr(rr, "LOG_PATH", app_dir / "role_radar.log")
     monkeypatch.setattr(out, "setup_logging", lambda _path: None)
 
     for var in CONFIG_VARS:
@@ -62,7 +65,7 @@ def test_test_scans_without_sending_or_persisting(monkeypatch, capsys, tmp_path)
     assert "Role Radar — test" in output
     assert "Senior Data Analyst" in output
     assert sent == []
-    assert not (tmp_path / "seen.json").exists()
+    assert not (tmp_path / "RoleRadar" / "seen_jobs.json").exists()
 
 
 def test_test_does_not_require_email(monkeypatch):
@@ -82,17 +85,19 @@ def test_run_sends_then_dedupes(monkeypatch, tmp_path):
 
     assert rr.main(["run"]) == 0
     assert len(sent) == 1
-    assert "https://jobs.example.com/1" in state.load_seen(tmp_path / "seen.json")
+    state_path = tmp_path / "RoleRadar" / "seen_jobs.json"
+    assert "https://jobs.example.com/1" in state.load_seen(state_path)
 
     sent.clear()
     assert rr.main(["run"]) == 0
     assert sent == []
 
 
-def test_re_resets_state_then_runs_again(monkeypatch, tmp_path, capsys):
+def test_re_resends_seen_roles_without_clearing_first(monkeypatch, tmp_path, capsys):
     _set_board(monkeypatch)
     _set_email(monkeypatch)
-    state.save_seen({"https://jobs.example.com/1"}, tmp_path / "seen.json")
+    state_path = tmp_path / "RoleRadar" / "seen_jobs.json"
+    state.save_seen({"https://jobs.example.com/1", "keep-me"}, state_path)
     sent = []
     monkeypatch.setattr(
         rr,
@@ -101,9 +106,29 @@ def test_re_resets_state_then_runs_again(monkeypatch, tmp_path, capsys):
     )
 
     assert rr.main(["re"]) == 0
-    assert "Forgot 1 remembered role(s)" in capsys.readouterr().out
+
+    output = capsys.readouterr().out
+    assert "Retesting 2 current role(s)." in output
     assert len(sent) == 1
-    assert "https://jobs.example.com/1" in state.load_seen(tmp_path / "seen.json")
+    remembered = state.load_seen(state_path)
+    assert "https://jobs.example.com/1" in remembered
+    assert "keep-me" in remembered
+
+
+def test_re_email_failure_preserves_existing_state(monkeypatch, tmp_path):
+    _set_board(monkeypatch)
+    _set_email(monkeypatch)
+    state_path = tmp_path / "RoleRadar" / "seen_jobs.json"
+    original = {"https://jobs.example.com/1", "keep-me"}
+    state.save_seen(original, state_path)
+
+    def boom(*a, **k):
+        raise mail.EmailError("smtp refused")
+
+    monkeypatch.setattr(rr, "send_email", boom)
+
+    assert rr.main(["re"]) == 1
+    assert state.load_seen(state_path) == original
 
 
 def test_run_missing_config_is_exit_2(monkeypatch):
@@ -135,7 +160,7 @@ def test_run_email_failure_is_exit_1_no_state(monkeypatch, tmp_path):
     monkeypatch.setattr(rr, "send_email", boom)
 
     assert rr.main(["run"]) == 1
-    assert not (tmp_path / "seen.json").exists()
+    assert not (tmp_path / "RoleRadar" / "seen_jobs.json").exists()
 
 
 def test_conf_masks_password(monkeypatch, capsys):
@@ -156,7 +181,8 @@ def test_conf_bad_port_is_exit_2(monkeypatch):
 
 
 def test_jobs_lists_remembered_jobs(capsys, tmp_path):
-    state.save_seen({"https://x/1", "https://x/2"}, tmp_path / "seen.json")
+    state_path = tmp_path / "RoleRadar" / "seen_jobs.json"
+    state.save_seen({"https://x/1", "https://x/2"}, state_path)
 
     assert rr.main(["jobs"]) == 0
 
@@ -166,25 +192,54 @@ def test_jobs_lists_remembered_jobs(capsys, tmp_path):
 
 
 def test_reset_clears_state(capsys, tmp_path):
-    state.save_seen({"https://x/1", "https://x/2"}, tmp_path / "seen.json")
+    state_path = tmp_path / "RoleRadar" / "seen_jobs.json"
+    state.save_seen({"https://x/1", "https://x/2"}, state_path)
 
     assert rr.main(["reset"]) == 0
 
     assert "Forgot 2" in capsys.readouterr().out
-    assert state.load_seen(tmp_path / "seen.json") == set()
+    assert state.load_seen(state_path) == set()
 
 
-def test_check_passes_with_ready_config(monkeypatch, tmp_path, capsys):
+def test_check_launches_browser(monkeypatch, tmp_path, capsys):
     _set_board(monkeypatch)
     _set_email(monkeypatch)
-    (tmp_path / ".env").write_text("JOB_BOARD_URL=https://example.com\n")
-    (tmp_path / "logs").mkdir()
+    app_dir = tmp_path / "RoleRadar"
+    app_dir.mkdir()
+    (app_dir / ".env").write_text("JOB_BOARD_URL=https://example.com\n")
+
+    monkeypatch.setattr(
+        scraper,
+        "check_browser",
+        lambda: BrowserStatus(
+            browser_version="152.0.0",
+            driver_version="152.0.0",
+            driver_path="/tmp/chromedriver",
+        ),
+    )
 
     assert rr.main(["check"]) == 0
 
     output = capsys.readouterr().out
-    assert "Role Radar — check" in output
+    assert "Chrome 152.0.0 launched successfully" in output
+    assert "ChromeDriver 152.0.0 is working" in output
     assert "Ready to run." in output
+
+
+def test_check_reports_browser_failure(monkeypatch, tmp_path, capsys):
+    _set_board(monkeypatch)
+    _set_email(monkeypatch)
+    app_dir = tmp_path / "RoleRadar"
+    app_dir.mkdir()
+    (app_dir / ".env").write_text("JOB_BOARD_URL=https://example.com\n")
+
+    def boom():
+        raise scraper.ScrapeError("Chrome/ChromeDriver launch failed: blocked")
+
+    monkeypatch.setattr(scraper, "check_browser", boom)
+
+    assert rr.main(["check"]) == 2
+    assert "Chrome/ChromeDriver launch failed" in capsys.readouterr().out
 
 
 @pytest.mark.parametrize(

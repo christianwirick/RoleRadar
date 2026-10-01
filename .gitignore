@@ -33,12 +33,6 @@ dist/
 .eggs/
 wheels/
 
-# Runtime data
-data/*
-!data/.gitkeep
-logs/*
-!logs/.gitkeep
-
 # Editors
 .vscode/
 .idea/

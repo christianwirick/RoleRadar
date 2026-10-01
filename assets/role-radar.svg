@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="280" viewBox="0 0 1000 280" role="img" aria-labelledby="title desc">
+  <title id="title">RoleRadar</title>
+  <desc id="desc">A radar sweep beside the RoleRadar name and the phrase less refreshing, more applying.</desc>
+  <rect width="1000" height="280" rx="28" fill="#0B1020"/>
+  <g transform="translate(150 140)" fill="none" stroke="#62E6A8">
+    <circle r="92" stroke-width="3" opacity=".9"/>
+    <circle r="61" stroke-width="2" opacity=".55"/>
+    <circle r="30" stroke-width="2" opacity=".35"/>
+    <path d="M-92 0H92M0-92V92" stroke-width="1.5" opacity=".28"/>
+    <path d="M0 0 L78 -49 A92 92 0 0 1 92 0 Z" fill="#62E6A8" opacity=".16" stroke="none"/>
+    <path d="M0 0L78-49" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="45" cy="-28" r="6" fill="#62E6A8" stroke="none"/>
+    <circle cx="-48" cy="34" r="4" fill="#B78CFF" stroke="none"/>
+  </g>
+  <g font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+    <text x="290" y="128" fill="#F7F8FC" font-size="68" font-weight="750" letter-spacing="-2">RoleRadar</text>
+    <text x="294" y="174" fill="#AAB4CF" font-size="25" font-weight="500">less refreshing. more applying.</text>
+    <rect x="294" y="198" width="192" height="38" rx="19" fill="#161E35"/>
+    <text x="318" y="224" fill="#62E6A8" font-size="17" font-weight="700">MONITOR · MATCH · MAIL</text>
+  </g>
+</svg>

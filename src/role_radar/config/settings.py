@@ -55,8 +55,8 @@ def resolve_config(env_path: Path) -> AppConfig:
 def require_config(cfg: AppConfig, env_path: Path, *, require_email: bool) -> None:
     """Raise ConfigError if required settings are absent.
 
-    Email credentials are only enforced when require_email is set, so
-    `check` and `doctor` can validate the board config without them.
+    Email credentials are enforced for commands that can send mail. `rr test`
+    can validate the board configuration without email credentials.
     """
     missing = []
     if not cfg.url:
@@ -79,12 +79,12 @@ def require_config(cfg: AppConfig, env_path: Path, *, require_email: bool) -> No
             prefix = "Missing .env and required config"
         raise ConfigError(
             f"{prefix}: {', '.join(missing)}. "
-            f"Copy .env.example to {env_path.name} and fill it in."
+            f"Create {env_path} from .env.example and fill it in."
         )
 
 
 def format_config(cfg: AppConfig) -> str:
-    """Render resolved config for `config show`, never echoing the password."""
+    """Render resolved config for `rr conf`, never echoing the password."""
     def shown(value: str) -> str:
         return value if value else "(not set)"
 
