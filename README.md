@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/role-radar.svg" alt="RoleRadar" width="820">
+  <img src="docs/assets/role-radar.svg" alt="RoleRadar" width="820">
 </p>
 
 # Stop refreshing job boards. Let the radar watch for you.
@@ -14,7 +14,7 @@ RoleRadar scans job boards, finds roles that match what you want, filters out jo
 </p>
 
 <p align="center">
-  <img src="docs/terminal-demo.gif" alt="RoleRadar terminal demo" width="700">
+  <img src="docs/assets/terminal-demo.gif" alt="RoleRadar terminal demo" width="700">
 </p>
 
 ## What it does
