@@ -172,9 +172,8 @@ class Pulse:
         if len(choices) == 1:
             return choices[0]
 
-        message = random.choice(choices)
-        while message == self._last_message:
-            message = random.choice(choices)
+        available = tuple(message for message in choices if message != self._last_message)
+        message = random.choice(available)
         self._last_message = message
         return message
 
