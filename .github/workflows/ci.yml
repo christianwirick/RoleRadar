@@ -12,8 +12,13 @@ permissions:
 
 jobs:
   test:
-    name: Test & Lint
+    name: Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12", "3.14"]
 
     steps:
       - name: Checkout
@@ -22,14 +27,53 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
           cache: pip
 
       - name: Install
         run: pip install -e '.[dev]'
 
       - name: Lint
+        if: matrix.python-version == '3.12'
         run: ruff check .
 
       - name: Tests
         run: pytest -q
+
+      - name: Browser smoke
+        if: matrix.python-version == '3.12'
+        run: |
+          python - <<'PY'
+          from role_radar.scraper import check_browser
+
+          status = check_browser()
+          print(f"Chrome {status.browser_version}")
+          print(f"ChromeDriver {status.driver_version}")
+          print(status.driver_path)
+          PY
+
+      - name: Security sanity
+        if: matrix.python-version == '3.12'
+        shell: bash
+        run: |
+          set -eu
+
+          if git ls-files | grep -Eq '(^|/)\.env$'; then
+            echo "Tracked .env file found."
+            exit 1
+          fi
+
+          if git grep -nE 'gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,}|-----BEGIN (RSA|OPENSSH|EC) PRIVATE KEY-----'; then
+            echo "Possible secret found in tracked files."
+            exit 1
+          fi
+
+          if git grep -nE '/Users/[^/[:space:]]+'; then
+            echo "Local macOS user path found in tracked files."
+            exit 1
+          fi
+
+          if git grep -nE '^EMAIL_PASSWORD=.+$' -- ':!.env.example'; then
+            echo "Email password assignment found outside .env.example."
+            exit 1
+          fi
