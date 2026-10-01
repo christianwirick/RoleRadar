@@ -111,10 +111,10 @@ def cmd_reset() -> int:
     return 0
 
 
-def cmd_clear() -> int:
-    """Clear the terminal screen."""
-    print("\033[2J\033[H", end="", flush=True)
-    return 0
+def cmd_re() -> int:
+    """Clear remembered jobs, then run the alert process again."""
+    cmd_reset()
+    return cmd_run()
 
 
 def _check_rows(cfg: AppConfig) -> tuple[list[str], list[str]]:
@@ -187,11 +187,8 @@ def build_parser() -> argparse.ArgumentParser:
     run_parser = sub.add_parser("run", help="Scan, email new matches, and save state.")
     run_parser.set_defaults(handler=lambda _args: cmd_run())
 
-    re_parser = sub.add_parser("re", help="Run Role Radar again.")
-    re_parser.set_defaults(handler=lambda _args: cmd_run())
-
-    clear_parser = sub.add_parser("clear", help="Clear the terminal screen.")
-    clear_parser.set_defaults(handler=lambda _args: cmd_clear())
+    re_parser = sub.add_parser("re", help="Reset remembered jobs, then run again.")
+    re_parser.set_defaults(handler=lambda _args: cmd_re())
 
     jobs_parser = sub.add_parser("jobs", help="Show remembered jobs.")
     jobs_parser.set_defaults(handler=lambda _args: cmd_jobs())
