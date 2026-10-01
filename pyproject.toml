@@ -46,7 +46,7 @@ dev = [
 ]
 
 [project.scripts]
-role-radar = "role_radar.cli:main"
+rr = "role_radar.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
