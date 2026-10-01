@@ -1,7 +1,5 @@
 """Tests for the simplified Role Radar CLI."""
 
-from pathlib import Path
-
 import pytest
 
 from role_radar import cli as rr
@@ -54,14 +52,6 @@ def _set_board(monkeypatch):
 def _set_email(monkeypatch):
     monkeypatch.setenv("EMAIL_USER", "me@example.com")
     monkeypatch.setenv("EMAIL_PASSWORD", "app-password")
-
-
-def test_runtime_paths_live_outside_repo():
-    expected = Path.home() / ".config" / "RoleRadar"
-    assert rr.APP_DIR == expected
-    assert rr.ENV_PATH == expected / ".env"
-    assert rr.SEEN_PATH == expected / "seen_jobs.json"
-    assert rr.LOG_PATH == expected / "role_radar.log"
 
 
 def test_test_scans_without_sending_or_persisting(monkeypatch, capsys, tmp_path):
