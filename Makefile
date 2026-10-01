@@ -2,9 +2,9 @@ PYTHON := .venv/bin/python
 PIP := .venv/bin/pip
 PYTEST := .venv/bin/pytest
 RUFF := .venv/bin/ruff
-APP := .venv/bin/role-radar
+APP := .venv/bin/rr
 
-.PHONY: help setup install test lint format check run doctor clean
+.PHONY: help setup install test lint format check run clean
 
 help:
 	@echo "Role Radar"
@@ -16,7 +16,6 @@ help:
 	@echo "  make format   Format Python code"
 	@echo "  make check    Run lint + tests"
 	@echo "  make run      Run Role Radar"
-	@echo "  make doctor   Validate local configuration"
 	@echo "  make clean    Remove generated files"
 
 setup:
@@ -42,8 +41,6 @@ check: lint test
 run:
 	$(APP) run
 
-doctor:
-	$(APP) doctor
 
 clean:
 	rm -rf build dist .pytest_cache .ruff_cache htmlcov
