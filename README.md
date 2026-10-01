@@ -10,62 +10,71 @@ A lightweight Python CLI that watches job boards and emails new matching roles.
 
 **Monitor → Match → Deduplicate → Notify**
 
-## What it does
-
-- Scrapes JavaScript-rendered job boards with Selenium
-- Matches roles against configurable title keywords
-- Remembers previously seen jobs
-- Emails only newly discovered matches
-- Supports dry runs, diagnostics, and email previews
-
 ## Quick start
 
 ```bash
 git clone https://github.com/christianwirick/RoleRadar.git
 cd RoleRadar
-
 make setup
-cp .env.example .env
 ```
 
-Edit `.env`, then verify your configuration:
+Keep the real configuration outside the repository:
 
 ```bash
-make doctor
+mkdir -p ~/.config/RoleRadar
+cp .env.example ~/.config/RoleRadar/.env
+ln -s ~/.config/RoleRadar/.env .env
+chmod 600 ~/.config/RoleRadar/.env
 ```
 
-Check the board without sending email:
-
-```bash
-role-radar check
-```
-
-Run normally:
-
-```bash
-role-radar run
-```
+Edit `~/.config/RoleRadar/.env`, then use `rr`.
 
 ## Commands
 
 | Command | Purpose |
 | --- | --- |
-| `role-radar check` | Scan without sending email or updating state |
-| `role-radar run` | Scan and notify about new matches |
-| `role-radar doctor` | Validate local configuration |
-| `role-radar config show` | Show resolved configuration |
-| `role-radar titles show` | Show title filters |
-| `role-radar seen list` | Show previously seen roles |
-| `role-radar preview-email` | Generate a local email preview |
-| `role-radar export-clean` | Create a clean project export |
+| `rr test` | Scan the live board without email or state changes |
+| `rr check` | Validate local configuration and dependencies |
+| `rr run` | Scan, email new matches, and save state |
+| `rr re` | Run the same alert process again |
+| `rr clear` | Clear the terminal screen |
+| `rr jobs` | Show jobs already remembered |
+| `rr conf` | Show resolved configuration with the password hidden |
+| `rr reset` | Clear remembered job state |
 
-## Configuration
+## Typical use
 
-Copy the example file:
+Check the setup:
 
 ```bash
-cp .env.example .env
+rr check
 ```
+
+Test the board without sending email:
+
+```bash
+rr test
+```
+
+Send alerts for new matches:
+
+```bash
+rr run
+```
+
+See remembered jobs:
+
+```bash
+rr jobs
+```
+
+Clear remembered jobs:
+
+```bash
+rr reset
+```
+
+## Configuration
 
 The main settings are:
 
@@ -75,7 +84,7 @@ The main settings are:
 - email credentials and recipient
 - SMTP configuration
 
-See [`.env.example`](.env.example) for the complete template.
+See [`.env.example`](.env.example) for the template.
 
 ## Development
 
@@ -83,15 +92,8 @@ See [`.env.example`](.env.example) for the complete template.
 make check
 ```
 
-This runs:
-
-- Ruff
-- pytest
-
-The test suite runs offline and does not require a live job board or email account.
+This runs Ruff and pytest.
 
 ## License
 
-BSD 3-Clause. Reuse and modification are permitted as long as the copyright and license notice are retained.
-
-See [LICENSE](LICENSE).
+BSD 3-Clause. See [LICENSE](LICENSE).
